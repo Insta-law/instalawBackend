@@ -31,7 +31,7 @@ public class OAuth2LoginController {
     @Autowired
     IUserService userService;
 
-    @GetMapping("/auth/google/callback")
+    /*@GetMapping("/auth/google/callback")
     public void loginOrSignup(@AuthenticationPrincipal OAuth2User principal, HttpServletResponse response) {
         if (principal == null) {
             try {
@@ -78,7 +78,7 @@ public class OAuth2LoginController {
         catch (Exception ex){
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
+    }*/
 
 
 }

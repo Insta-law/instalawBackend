@@ -8,18 +8,20 @@ public class UserMapper {
     public static UserDto toDto(User user) {
         UserDto userDto = new UserDto();
         userDto.setId(user.getId());
-        userDto.setGoogleId(user.getGoogleId());
-        userDto.setName(user.getName());
         userDto.setEmail(user.getEmail());
+        userDto.setPhone(user.getPhone());
+        userDto.setPasswordHash(user.getPasswordHash());
+        userDto.setUsername(user.getUsername());
         return userDto;
     }
 
     public static User toEntity(UserDto userDto) {
         User user = new User();
         user.setId(userDto.getId());
-        user.setGoogleId(userDto.getGoogleId());
-        user.setName(userDto.getName());
+        user.setPhone(userDto.getPhone());
+        user.setUsername(userDto.getUsername());
         user.setEmail(userDto.getEmail());
+        user.setPhone(userDto.getPhone());
         return user;
     }
 }
