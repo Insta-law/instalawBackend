@@ -1,12 +1,16 @@
 package com.KnowLaw.backend.Service;
 
 import com.KnowLaw.backend.Dto.SignupRequestDto;
-import com.KnowLaw.backend.Dto.UserDto;
 import com.KnowLaw.backend.Entity.User;
-import jakarta.transaction.Transactional;
+
+import java.util.Optional;
 
 public interface IUserService {
-    void registerUser(SignupRequestDto signupRequest);
+    User registerUser(SignupRequestDto signupRequest);
+
+    Optional<User> getUserByUsername(String username);
+
+    Optional<User> getUserByEmail(String email);
     /*@Transactional
     User signupOrLoginUser(String googleId, String name, String email);
 

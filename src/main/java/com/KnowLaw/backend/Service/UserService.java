@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService implements IUserService{
     @Autowired
@@ -50,10 +52,20 @@ public class UserService implements IUserService{
 
     @Override
     @Transactional
-    public void registerUser(SignupRequestDto signupRequest){
+    public User registerUser(SignupRequestDto signupRequest){
         String hash= passwordEncoder.encode(signupRequest.getPassword());
         User user= new User(signupRequest.getEmail(), signupRequest.getUsername(), signupRequest.getPhone(),hash);
-        userRepository.save(user);
+        return userRepository.save(user);
+    }
+
+    @Override
+    public Optional<User> getUserByUsername(String username){
+        return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public Optional<User> getUserByEmail(String email){
+        return userRepository.findByUsername(email);
     }
 
 

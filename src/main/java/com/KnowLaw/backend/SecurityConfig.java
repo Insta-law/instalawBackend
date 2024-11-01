@@ -27,10 +27,10 @@ public class SecurityConfig  {
         http
                 .cors(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/api/auth/requestSignup", "/api/auth/login", "/error").permitAll() // Allow access to these endpoints
+                        .requestMatchers("/api/auth/requestSignup", "/api/auth/login","/api/auth/finaliseSignup", "/error").permitAll() // Allow access to these endpoints
                         .anyRequest().authenticated() // All other requests require authentication
                 )
-                .csrf(csrf -> csrf.disable() // CSRF protection
+                .csrf(AbstractHttpConfigurer::disable // CSRF protection
                 );
         return http.build();
     }
