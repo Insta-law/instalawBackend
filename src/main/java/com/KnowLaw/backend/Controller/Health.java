@@ -10,7 +10,7 @@ public class Health {
 
     @GetMapping("/health")
     public ResponseEntity<String> healthCheck(){
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<>("All okay boys !",HttpStatus.OK);
 
     }
 }
