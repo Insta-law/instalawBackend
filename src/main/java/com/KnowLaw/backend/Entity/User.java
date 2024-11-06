@@ -20,11 +20,16 @@ public class User {
     private String username;
     private String phone;
     private String passwordHash;
+    @ManyToOne
+    @JoinColumn(name="role_id")
+    private Role role;
 
-    public User(String email,String username,String phone,String passwordHash){
+
+    public User(String email,String username,String phone,String passwordHash,Role role){
         this.email=email;
         this.username=username;
         this.phone =phone;
         this.passwordHash=passwordHash;
+        this.role = role;
     }
 }

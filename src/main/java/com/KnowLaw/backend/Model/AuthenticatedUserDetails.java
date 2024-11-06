@@ -1,5 +1,6 @@
 package com.KnowLaw.backend.Model;
 
+import com.KnowLaw.backend.Entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,4 +15,5 @@ public class AuthenticatedUserDetails {
     private String email;
     private String username;
     private String phone;
+    private Role role;
 }

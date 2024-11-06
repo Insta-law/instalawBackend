@@ -1,11 +1,14 @@
 package com.KnowLaw.backend.Dto;
 
+import com.KnowLaw.backend.Entity.Role;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class SignupRequestDto {
     @Email
@@ -17,4 +20,6 @@ public class SignupRequestDto {
     private String phone;
     @NotBlank
     private String password;
+    @NotBlank
+    private String role;
 }

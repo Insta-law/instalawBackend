@@ -2,6 +2,7 @@ package com.KnowLaw.backend.Controller;
 
 import com.KnowLaw.backend.Dto.SignupRequestDto;
 import com.KnowLaw.backend.Entity.User;
+import com.KnowLaw.backend.Exception.UnauthorizedException;
 import com.KnowLaw.backend.Model.AuthenticatedUserDetails;
 import com.KnowLaw.backend.Service.*;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,6 +21,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -66,11 +70,30 @@ public class AuthController {
 
     @NotNull
     private ResponseEntity<AuthenticatedUserDetails> registerUser(SignupRequestDto signupRequest) {
+
+
         String hash= passwordEncoder.encode(signupRequest.getPassword());
-        User addedUser = userService.registerUser(signupRequest,hash);
-        otpService.clearOtp(signupRequest.getEmail());
-        AuthenticatedUserDetails userDetails = new AuthenticatedUserDetails(addedUser.getId(),addedUser.getEmail(),addedUser.getUsername(),addedUser.getPhone());
-        return new ResponseEntity<AuthenticatedUserDetails>(userDetails, HttpStatus.CREATED);
+        try {
+            User addedUser = userService.registerUser(signupRequest, hash);
+            otpService.clearOtp(signupRequest.getEmail());
+            AuthenticatedUserDetails userDetails = new AuthenticatedUserDetails(
+                    addedUser.getId(),
+                    addedUser.getEmail(),
+                    addedUser.getUsername(),
+                    addedUser.getPhone(),
+                    addedUser.getRole());
+
+            return new ResponseEntity<AuthenticatedUserDetails>(userDetails, HttpStatus.CREATED);
+        }
+        catch(UnauthorizedException ex)
+        {
+            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.FORBIDDEN);
+        }
+        catch(NoSuchElementException ex)
+        {
+            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.BAD_REQUEST);
+        }
+
     }
 
     @PostMapping("/login")
@@ -88,7 +111,12 @@ public class AuthController {
     @NotNull
     private ResponseEntity<AuthenticatedUserDetails> authenticate(String email, String password, HttpServletRequest request, HttpServletResponse response) {
         User fetchedUser = userService.getUserByEmail(email).orElseThrow();
-        AuthenticatedUserDetails userDetails = new AuthenticatedUserDetails(fetchedUser.getId(),fetchedUser.getEmail(),fetchedUser.getUsername(),fetchedUser.getPhone());
+        AuthenticatedUserDetails userDetails = new AuthenticatedUserDetails(
+                fetchedUser.getId(),
+                fetchedUser.getEmail(),
+                fetchedUser.getUsername(),
+                fetchedUser.getPhone(),
+                fetchedUser.getRole());
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         HttpSession session = request.getSession(true);
@@ -98,14 +126,13 @@ public class AuthController {
     }
 
     @GetMapping("/isAuthenticated")
-    public ResponseEntity<String> debug(Authentication authentication) {
+    public ResponseEntity<String> isAuthenticated(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
             return ResponseEntity.ok("User is authenticated as: " + authentication.getName());
         } else {
             return ResponseEntity.ok("User is not authenticated");
         }
     }
-
 
 
 }

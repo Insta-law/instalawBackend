@@ -1,5 +1,6 @@
 package com.KnowLaw.backend.Dto;
 
+import com.KnowLaw.backend.Entity.Role;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,5 +14,6 @@ public class UserDto {
     private String username;
     private String phone;
     private String passwordHash;
+    private Role role;
 
 }
