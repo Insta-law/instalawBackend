@@ -18,6 +18,15 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: knowlaw
+          POSTGRES_PASSWORD: test
+        ports:
+          - 5432:5432
+
 
     steps:
     - uses: actions/checkout@v4
@@ -28,6 +37,11 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
+      env:
+        DB_URL: jdbc:postgresql://localhost:5432/knowlaw
+        DB_USERNAME: knowlawadmin
+        DB_PASSWORD: test
+        DB_DRIVER: org.postgresql.Driver
       run: mvn -B package --file pom.xml
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
