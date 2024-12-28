@@ -30,10 +30,4 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             @Param("workingDate") LocalDate workingDate,
             @Param("slot") String slot);
 
-    @Query("UPDATE Booking b " +
-            "SET b.bookedBy.id = :userId " +
-            "WHERE b.id = :bookingId")
-    Optional<Booking> bookSlot(
-            @Param("bookingId") UUID bookingId,
-            @Param("userId") UUID userId);
 }

@@ -25,7 +25,7 @@ public class BookingController {
     @PreAuthorize("hasAnyRole('ADMIN_ROLE', 'CONSUMER_ROLE')")
     public ResponseEntity<String> book(@RequestParam UUID id, @RequestParam LocalDate workingDate,@RequestParam String slot){
         try {
-            Booking booking = bookingService.book(id, workingDate, slot).orElseThrow();
+            Booking booking = bookingService.book(id, workingDate, slot);
             return new ResponseEntity<String>(booking.toString(), HttpStatus.OK);
         }catch(NotFoundException ex) {
             return new ResponseEntity<String>(ex.getMessage(),HttpStatus.BAD_REQUEST);

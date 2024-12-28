@@ -1,9 +1,13 @@
 package com.KnowLaw.backend.Service;
 
 import com.KnowLaw.backend.Entity.Booking;
+import com.KnowLaw.backend.Entity.User;
 import com.KnowLaw.backend.Exception.NotFoundException;
 import com.KnowLaw.backend.Repository.BookingRepository;
+import com.KnowLaw.backend.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,17 +18,21 @@ import java.util.UUID;
 public class BookingService implements IBookingService{
     @Autowired
     private BookingRepository bookingRepository;
+    @Autowired
+    private UserRepository userRepository;
 
 
     @Override
-    public Optional<Booking> book(UUID id, LocalDate workingDate, String slot) {
-        Optional<Booking> existingSlot = bookingRepository.findByLawyerWorkingDateAndTime(id, workingDate, slot);
-        if(existingSlot.isEmpty())
-            throw new NotFoundException("No such booking slot exists");
+    public Booking book(UUID id, LocalDate workingDate, String slot) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        Booking existingSlot = bookingRepository.findByLawyerWorkingDateAndTime(id, workingDate, slot).orElseThrow(()->new NotFoundException("No such booking slot exists"));
 
-        if(existingSlot.orElseThrow().getBookedBy() == null)
+        if(existingSlot.getBookedBy() != null)
             throw new NotFoundException("Slot is already booked");
 
-        return bookingRepository.bookSlot(existingSlot.get().getId(), id);
+        User user= userRepository.findByEmail(username).orElseThrow(() -> new NotFoundException("User is not registered"));
+        existingSlot.setBookedBy(user);
+        return bookingRepository.save(existingSlot);
     }
 }
