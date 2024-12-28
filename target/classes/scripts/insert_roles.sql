@@ -1,0 +1,2 @@
+INSERT INTO KnowLawUserRole (roleName)
+VALUES ('ADMIN_ROLE'), ('PROVIDER_ROLE'), ('CONSUMER_ROLE');

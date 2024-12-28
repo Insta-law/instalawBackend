@@ -1,6 +1,7 @@
 package com.KnowLaw.backend.Controller;
 
 import com.KnowLaw.backend.Dto.SignupRequestDto;
+import com.KnowLaw.backend.Entity.Lawyer;
 import com.KnowLaw.backend.Entity.User;
 import com.KnowLaw.backend.Exception.UnauthorizedException;
 import com.KnowLaw.backend.Model.AuthenticatedUserDetails;
@@ -8,6 +9,7 @@ import com.KnowLaw.backend.Service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +40,8 @@ public class AuthController {
     private AuthenticationManager authenticationManager;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ILawyerService lawyerService;
 
     @PostMapping("/requestSignup")
     public ResponseEntity<String> RequestSignup(@Valid @RequestBody SignupRequestDto signupRequest){
@@ -69,12 +73,16 @@ public class AuthController {
     }
 
     @NotNull
+    @Transactional
     private ResponseEntity<AuthenticatedUserDetails> registerUser(SignupRequestDto signupRequest) {
 
 
         String hash= passwordEncoder.encode(signupRequest.getPassword());
         try {
             User addedUser = userService.registerUser(signupRequest, hash);
+            if(signupRequest.getRole().equals("PROVIDER_ROLE")) {
+                Lawyer addedLawyer = lawyerService.registerLawyer(signupRequest,addedUser);
+            }
             otpService.clearOtp(signupRequest.getEmail());
             AuthenticatedUserDetails userDetails = new AuthenticatedUserDetails(
                     addedUser.getId(),

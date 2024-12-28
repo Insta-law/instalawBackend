@@ -1,6 +1,7 @@
 package com.KnowLaw.backend.Dto;
 
 import com.KnowLaw.backend.Entity.Role;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -22,4 +23,5 @@ public class SignupRequestDto {
     private String password;
     @NotBlank
     private String role;
+    private String govtId;
 }
