@@ -8,4 +8,8 @@ import java.util.UUID;
 
 public interface IBookingService {
     Booking book(UUID id, LocalDate workingDate, String slot);
+
+    Long getCount(UUID id, Booking.BookingStatus status);
+
+    Long getClents(UUID id);
 }

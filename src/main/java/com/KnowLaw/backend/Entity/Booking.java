@@ -27,7 +27,13 @@ public class Booking {
     @ManyToOne
     @JoinColumn(name = "slot_id")
     private Slots slot;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookingStatus status = BookingStatus.OPEN;
 
+    public enum BookingStatus{
+        OPEN,BOOKED,COMPLETED
+    }
     public Booking(Lawyer lawyer,User bookedBy,LocalDate workingDate,Slots slot)
     {
         this.lawyer = lawyer;
@@ -42,6 +48,7 @@ public class Booking {
                 ", lawyer=" + (lawyer != null ? lawyer.getUserName() : "null") +
                 ", bookedBy=" + (bookedBy != null ? bookedBy.getUsername() : "null") +
                 ", workingDate=" + workingDate +
-                ", slot=" + (slot != null ? slot.getTime() : "null") ;
+                ", slot=" + (slot != null ? slot.getTime() : "null") +
+                ", status=" + status;
     }
 }

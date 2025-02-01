@@ -30,4 +30,10 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
             @Param("workingDate") LocalDate workingDate,
             @Param("slot") String slot);
 
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.lawyer.uuid = :id AND b.workingDate >= :workingDate AND b.status = :status")
+    Long countSlots(@Param("id") UUID id, @Param("workingDate") LocalDate workingDate, @Param("status")Booking.BookingStatus status);
+
+    @Query("SELECT COUNT( DISTINCT(b.bookedBy.id)) FROM Booking b WHERE b.lawyer.uuid = :id AND b.bookedBy is not null")
+    Long countClients(@Param("id") UUID id);
+
 }
