@@ -36,7 +36,7 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
         http
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
                                 "/api/auth/requestSignup",
@@ -79,6 +79,7 @@ public class SecurityConfig  {
         configuration.setAllowedHeaders(List.of("*")); // Allow all headers
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Allow specific HTTP methods
         configuration.setAllowCredentials(true); // Allow credentials such as cookies
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

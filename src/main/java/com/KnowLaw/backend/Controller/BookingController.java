@@ -33,7 +33,7 @@ public class BookingController {
     }
 
     @GetMapping("/stats/open")
-    @PreAuthorize("hasAnyRole('ADMIN_ROLE,'PROVIDER_ROLE')")
+    @PreAuthorize("hasAnyRole('ADMIN_ROLE','PROVIDER_ROLE')")
     public ResponseEntity<Long> countOpenBookings(@RequestParam UUID id) {
         try {
             Long count = bookingService.getCount(id, Booking.BookingStatus.OPEN);
@@ -45,7 +45,7 @@ public class BookingController {
 
 
     @GetMapping("/stats/booked")
-    @PreAuthorize("hasAnyRole('ADMIN_ROLE,'PROVIDER_ROLE')")
+    @PreAuthorize("hasAnyRole('ADMIN_ROLE','PROVIDER_ROLE')")
     public ResponseEntity<Long> countBookedBookings(@RequestParam UUID id) {
         try {
             Long count = bookingService.getCount(id, Booking.BookingStatus.BOOKED);

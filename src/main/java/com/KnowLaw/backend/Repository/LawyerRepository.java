@@ -10,6 +10,6 @@ import java.util.UUID;
 
 public interface LawyerRepository extends JpaRepository<Lawyer, UUID> {
 
-    @Query("SELECT l from Lawyer l where l.user.id =: id")
+    @Query("SELECT l from Lawyer l where l.user.id = :id")
     Optional<Lawyer> findLawyerByUserId(@Param("id") UUID id);
 }
