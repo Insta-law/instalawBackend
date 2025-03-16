@@ -75,4 +75,19 @@ public class SlotService implements ISlotService{
             bookingRepository.saveAll(newBookings);
 
     }
+
+    @Override
+    public List<Slots> getAvailableSlots(UUID lawyerId, LocalDate date){
+        Lawyer lawyer = lawyerRepository.findById(lawyerId)
+                .orElseThrow(() -> new NotFoundException("Lawyer not found"));
+        List<Slots> allSlots = slotsRepository.findAll();
+        List<Booking> bookings = bookingRepository.findByLawyerAndWorkingDate(lawyerId, date);
+        Set<Long> openSlotIds = bookings.stream()
+                .filter(b -> b.getStatus() == Booking.BookingStatus.OPEN)
+                .map(b -> b.getSlot().getId())
+                .collect(Collectors.toSet());
+        return allSlots.stream()
+                .filter(slot -> openSlotIds.contains(slot.getId()))
+                .collect(Collectors.toList());
+    }
 }

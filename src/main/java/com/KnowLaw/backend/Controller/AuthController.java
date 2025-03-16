@@ -134,11 +134,11 @@ public class AuthController {
     }
 
     @GetMapping("/isAuthenticated")
-    public ResponseEntity<String> isAuthenticated(Authentication authentication) {
+    public ResponseEntity<Boolean> isAuthenticated(Authentication authentication) {
         if (authentication != null && authentication.isAuthenticated()) {
-            return ResponseEntity.ok("User is authenticated as: " + authentication.getName());
+            return new ResponseEntity<Boolean> (true,HttpStatus.OK);
         } else {
-            return ResponseEntity.ok("User is not authenticated");
+            return new ResponseEntity<Boolean> (false,HttpStatus.FORBIDDEN);
         }
     }
 

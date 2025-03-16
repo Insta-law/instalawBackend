@@ -193,7 +193,7 @@ public class AuthControllerTest {
         when(authentication.isAuthenticated()).thenReturn(true);
         when(authentication.getName()).thenReturn("user@example.com");
 
-        ResponseEntity<String> response = authController.isAuthenticated(authentication);
+        ResponseEntity<Boolean> response = authController.isAuthenticated(authentication);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("User is authenticated as: user@example.com", response.getBody());
@@ -201,7 +201,7 @@ public class AuthControllerTest {
 
     @Test
     void testIsAuthenticated_UnauthenticatedUser() {
-        ResponseEntity<String> response = authController.isAuthenticated(null);
+        ResponseEntity<Boolean> response = authController.isAuthenticated(null);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("User is not authenticated", response.getBody());
@@ -311,7 +311,7 @@ public class AuthControllerTest {
         Authentication authentication = mock(Authentication.class);
         when(authentication.isAuthenticated()).thenReturn(false);
 
-        ResponseEntity<String> response = authController.isAuthenticated(authentication);
+        ResponseEntity<Boolean> response = authController.isAuthenticated(authentication);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("User is not authenticated", response.getBody());

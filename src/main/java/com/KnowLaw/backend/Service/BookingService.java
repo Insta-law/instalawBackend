@@ -1,5 +1,6 @@
 package com.KnowLaw.backend.Service;
 
+import com.KnowLaw.backend.Dto.BookingDto;
 import com.KnowLaw.backend.Entity.Booking;
 import com.KnowLaw.backend.Entity.User;
 import com.KnowLaw.backend.Exception.NotFoundException;
@@ -12,6 +13,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -36,6 +41,7 @@ public class BookingService implements IBookingService{
 
         User user= userRepository.findByEmail(username).orElseThrow(() -> new NotFoundException("User is not registered"));
         existingSlot.setBookedBy(user);
+        existingSlot.setStatus(Booking.BookingStatus.BOOKED);
         return bookingRepository.save(existingSlot);
     }
 
@@ -54,4 +60,32 @@ public class BookingService implements IBookingService{
         return bookingRepository.countClients(id);
 
     }
+
+    @Override
+    public List<Booking> getUserBookings(UUID userId){
+        User user = userRepository.findById(userId).orElseThrow(()-> new NotFoundException("User not found"));
+        return bookingRepository.findByBookedUser(userId);
+    }
+
+    @Override
+    public void cancelBooking(UUID bookingId) {
+        Booking booking = bookingRepository.findById(bookingId).orElseThrow(()-> new NotFoundException("Booking not found"));
+        LocalDate bookingDate = booking.getWorkingDate();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HHmm");
+        LocalTime bookingTime = LocalTime.parse(booking.getSlot().getTime(),formatter);
+
+        LocalDateTime bookingDateTime = LocalDateTime.of(bookingDate,bookingTime);
+
+        LocalDateTime deadline = LocalDateTime.now().plusHours(6);
+
+        if (bookingDateTime.isBefore(deadline)) {
+            throw new IllegalStateException("Bookings must be cancelled at least 6 hours in advance");
+        }
+
+        booking.setStatus(Booking.BookingStatus.OPEN);
+        booking.setBookedBy(null);
+        bookingRepository.save(booking);
+
+    }
+
 }

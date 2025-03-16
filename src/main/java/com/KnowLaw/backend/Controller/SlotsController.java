@@ -1,17 +1,20 @@
 package com.KnowLaw.backend.Controller;
 
+import com.KnowLaw.backend.Dto.SlotDto;
 import com.KnowLaw.backend.Dto.SlotOpeningDto;
 import com.KnowLaw.backend.Service.ISlotService;
-import com.KnowLaw.backend.Service.SlotService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/slot")
@@ -31,4 +34,13 @@ public class SlotsController {
         return new ResponseEntity<String>("Slots added",HttpStatus.OK);
 
     }
+
+    @GetMapping("/availability")
+    public ResponseEntity<List<SlotDto>> getAvailability(@RequestParam UUID lawyerId, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date){
+        List<SlotDto> slots = slotService.getAvailableSlots(lawyerId,date).stream().map(SlotDto::new).toList();
+
+        return new ResponseEntity<List<SlotDto>>(slots,HttpStatus.OK);
+    }
+
+
 }

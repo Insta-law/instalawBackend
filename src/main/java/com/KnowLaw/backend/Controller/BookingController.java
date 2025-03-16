@@ -1,5 +1,6 @@
 package com.KnowLaw.backend.Controller;
 
+import com.KnowLaw.backend.Dto.BookingDto;
 import com.KnowLaw.backend.Entity.Booking;
 import com.KnowLaw.backend.Exception.NotFoundException;
 import com.KnowLaw.backend.Service.IBookingService;
@@ -10,7 +11,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -65,5 +68,25 @@ public class BookingController {
         } catch (Exception ex) {
             return new ResponseEntity<Long>(Long.valueOf(0), HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/user")
+    @PreAuthorize("hasAnyRole('ADMIN_ROLE','CONSUMER_ROLE')")
+    public ResponseEntity<List<BookingDto>> getUserBookings(@RequestParam UUID userId){
+        List<BookingDto> booking = bookingService.getUserBookings(userId).stream().map(BookingDto::new).toList();
+        return new ResponseEntity<List<BookingDto>>(booking,HttpStatus.OK);
+    }
+
+    @PutMapping("/cancel/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN_ROLE','CONSUMER_ROLE')")
+    public ResponseEntity<String> cancel(@PathVariable UUID id){
+        try{
+            bookingService.cancelBooking(id);
+            return new ResponseEntity<String>("Booking successfully canceled",HttpStatus.OK);
+        }catch (Exception ex)
+        {
+            return new ResponseEntity<String>(ex.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+
     }
 }
