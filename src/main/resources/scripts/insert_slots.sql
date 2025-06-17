@@ -1,3 +1,8 @@
+CREATE TABLE IF NOT EXISTS slots (
+    id BIGSERIAL PRIMARY KEY,
+    time VARCHAR(4) NOT NULL
+);
+
 INSERT INTO slots (time) VALUES
 ('0000'), ('0030'), ('0100'), ('0130'), ('0200'), ('0230'), ('0300'), ('0330'),
 ('0400'), ('0430'), ('0500'), ('0530'), ('0600'), ('0630'), ('0700'), ('0730'),
