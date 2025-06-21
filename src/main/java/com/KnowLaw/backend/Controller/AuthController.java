@@ -25,6 +25,7 @@ import org.springframework.security.web.context.HttpSessionSecurityContextReposi
 import org.springframework.web.bind.annotation.*;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -60,16 +61,24 @@ public class AuthController {
     }
 
     @PostMapping("/finaliseSignup")
-    public ResponseEntity<AuthenticatedUserDetails> Signup(@RequestBody SignupRequestDto signupRequest , @RequestParam String otp){
+    public ResponseEntity<String> Signup(@RequestBody SignupRequestDto signupRequest , @RequestParam String otp){
         if(userService.getUserByEmail(signupRequest.getEmail()).isPresent())
-            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Email already exists",HttpStatus.BAD_REQUEST);
         if(userService.getUserByUsername(signupRequest.getUsername()).isPresent())
-            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Username already exists",HttpStatus.BAD_REQUEST);
 
-        if(otpService.validateOtp(signupRequest.getEmail(), otp))
-            return registerUser(signupRequest);
+        if(otpService.validateOtp(signupRequest.getEmail(), otp)) {
+            ResponseEntity<AuthenticatedUserDetails> registerResponse = registerUser(signupRequest);
+            if(registerResponse.getStatusCode() == HttpStatus.FORBIDDEN)
+                return new ResponseEntity<String>("Cannot get admin role illegally",HttpStatus.FORBIDDEN);
+            else if (registerResponse.getStatusCode() == HttpStatus.BAD_REQUEST)
+                return new ResponseEntity<String>("Bad request sent",HttpStatus.BAD_REQUEST);
+            else
+                return new ResponseEntity<String>(Objects.requireNonNull(registerResponse.getBody()).toString(),HttpStatus.CREATED);
 
-        return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.FORBIDDEN);
+        }
+
+        return new ResponseEntity<String>("Incorrect otp",HttpStatus.FORBIDDEN);
     }
 
     @NotNull
