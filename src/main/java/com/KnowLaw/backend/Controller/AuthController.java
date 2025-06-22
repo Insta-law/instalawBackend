@@ -5,6 +5,7 @@ import com.KnowLaw.backend.Entity.Lawyer;
 import com.KnowLaw.backend.Entity.User;
 import com.KnowLaw.backend.Exception.UnauthorizedException;
 import com.KnowLaw.backend.Model.AuthenticatedUserDetails;
+import com.KnowLaw.backend.Response.SignupResponse;
 import com.KnowLaw.backend.Service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -61,29 +62,23 @@ public class AuthController {
     }
 
     @PostMapping("/finaliseSignup")
-    public ResponseEntity<String> Signup(@RequestBody SignupRequestDto signupRequest , @RequestParam String otp){
+    public ResponseEntity<SignupResponse> Signup(@RequestBody SignupRequestDto signupRequest , @RequestParam String otp){
         if(userService.getUserByEmail(signupRequest.getEmail()).isPresent())
-            return new ResponseEntity<String>("Email already exists",HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<SignupResponse>(new SignupResponse(null,false,"Email already exists"),HttpStatus.BAD_REQUEST);
         if(userService.getUserByUsername(signupRequest.getUsername()).isPresent())
-            return new ResponseEntity<String>("Username already exists",HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<SignupResponse>(new SignupResponse(null,false,"Username already exists"),HttpStatus.BAD_REQUEST);
 
         if(otpService.validateOtp(signupRequest.getEmail(), otp)) {
-            ResponseEntity<AuthenticatedUserDetails> registerResponse = registerUser(signupRequest);
-            if(registerResponse.getStatusCode() == HttpStatus.FORBIDDEN)
-                return new ResponseEntity<String>("Cannot get admin role illegally",HttpStatus.FORBIDDEN);
-            else if (registerResponse.getStatusCode() == HttpStatus.BAD_REQUEST)
-                return new ResponseEntity<String>("Could not find the required role in database",HttpStatus.BAD_REQUEST);
-            else
-                return new ResponseEntity<String>(Objects.requireNonNull(registerResponse.getBody()).toString(),HttpStatus.CREATED);
+            return registerUser(signupRequest);
 
         }
 
-        return new ResponseEntity<String>("Incorrect otp",HttpStatus.FORBIDDEN);
+        return new ResponseEntity<SignupResponse>(new SignupResponse(null,false,"Incorrect otp"),HttpStatus.FORBIDDEN);
     }
 
     @NotNull
     @Transactional
-    private ResponseEntity<AuthenticatedUserDetails> registerUser(SignupRequestDto signupRequest) {
+    private ResponseEntity<SignupResponse> registerUser(SignupRequestDto signupRequest) {
 
 
         String hash= passwordEncoder.encode(signupRequest.getPassword());
@@ -99,16 +94,18 @@ public class AuthController {
                     addedUser.getUsername(),
                     addedUser.getPhone(),
                     addedUser.getRole());
-
-            return new ResponseEntity<AuthenticatedUserDetails>(userDetails, HttpStatus.CREATED);
+            SignupResponse signupResponse = new SignupResponse(userDetails,true,"");
+            return new ResponseEntity<SignupResponse>(signupResponse, HttpStatus.CREATED);
         }
         catch(UnauthorizedException ex)
         {
-            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.FORBIDDEN);
+            SignupResponse signupResponse = new SignupResponse(null,false,"Cannot get admin role illegally");
+            return new ResponseEntity<SignupResponse>(signupResponse,HttpStatus.FORBIDDEN);
         }
         catch(NoSuchElementException ex)
         {
-            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.BAD_REQUEST);
+            SignupResponse signupResponse = new SignupResponse(null, false, "Could not find the required role in database");
+            return new ResponseEntity<SignupResponse>(signupResponse,HttpStatus.BAD_REQUEST);
         }
 
     }
