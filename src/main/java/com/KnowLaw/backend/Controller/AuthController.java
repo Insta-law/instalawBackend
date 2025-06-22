@@ -72,7 +72,7 @@ public class AuthController {
             if(registerResponse.getStatusCode() == HttpStatus.FORBIDDEN)
                 return new ResponseEntity<String>("Cannot get admin role illegally",HttpStatus.FORBIDDEN);
             else if (registerResponse.getStatusCode() == HttpStatus.BAD_REQUEST)
-                return new ResponseEntity<String>("Bad request sent",HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<String>("Could not find the required role in database",HttpStatus.BAD_REQUEST);
             else
                 return new ResponseEntity<String>(Objects.requireNonNull(registerResponse.getBody()).toString(),HttpStatus.CREATED);
 
