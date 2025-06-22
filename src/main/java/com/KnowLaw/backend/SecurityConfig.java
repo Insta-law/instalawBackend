@@ -4,6 +4,7 @@ import com.KnowLaw.backend.Service.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.server.CookieSameSiteSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,6 +61,11 @@ public class SecurityConfig  {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID"));
         return http.build();
+    }
+
+    @Bean
+    public CookieSameSiteSupplier cookieSameSiteSupplier(){
+        return CookieSameSiteSupplier.ofNone();
     }
 
     @Bean
