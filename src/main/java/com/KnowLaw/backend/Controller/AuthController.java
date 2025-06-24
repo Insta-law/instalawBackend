@@ -5,7 +5,7 @@ import com.KnowLaw.backend.Entity.Lawyer;
 import com.KnowLaw.backend.Entity.User;
 import com.KnowLaw.backend.Exception.UnauthorizedException;
 import com.KnowLaw.backend.Model.AuthenticatedUserDetails;
-import com.KnowLaw.backend.Response.SignupResponse;
+import com.KnowLaw.backend.Response.AuthResponse;
 import com.KnowLaw.backend.Service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,13 +20,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.NoSuchElementException;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -62,23 +62,23 @@ public class AuthController {
     }
 
     @PostMapping("/finaliseSignup")
-    public ResponseEntity<SignupResponse> Signup(@RequestBody SignupRequestDto signupRequest , @RequestParam String otp){
+    public ResponseEntity<AuthResponse> Signup(@RequestBody SignupRequestDto signupRequest , @RequestParam String otp){
         if(userService.getUserByEmail(signupRequest.getEmail()).isPresent())
-            return new ResponseEntity<SignupResponse>(new SignupResponse(null,false,"Email already exists"),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<AuthResponse>(new AuthResponse(null,false,"Email already exists"),HttpStatus.BAD_REQUEST);
         if(userService.getUserByUsername(signupRequest.getUsername()).isPresent())
-            return new ResponseEntity<SignupResponse>(new SignupResponse(null,false,"Username already exists"),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<AuthResponse>(new AuthResponse(null,false,"Username already exists"),HttpStatus.BAD_REQUEST);
 
         if(otpService.validateOtp(signupRequest.getEmail(), otp)) {
             return registerUser(signupRequest);
 
         }
 
-        return new ResponseEntity<SignupResponse>(new SignupResponse(null,false,"Incorrect otp"),HttpStatus.FORBIDDEN);
+        return new ResponseEntity<AuthResponse>(new AuthResponse(null,false,"Incorrect otp"),HttpStatus.FORBIDDEN);
     }
 
     @NotNull
     @Transactional
-    private ResponseEntity<SignupResponse> registerUser(SignupRequestDto signupRequest) {
+    private ResponseEntity<AuthResponse> registerUser(SignupRequestDto signupRequest) {
 
 
         String hash= passwordEncoder.encode(signupRequest.getPassword());
@@ -94,36 +94,41 @@ public class AuthController {
                     addedUser.getUsername(),
                     addedUser.getPhone(),
                     addedUser.getRole());
-            SignupResponse signupResponse = new SignupResponse(userDetails,true,"");
-            return new ResponseEntity<SignupResponse>(signupResponse, HttpStatus.CREATED);
+            AuthResponse authResponse = new AuthResponse(userDetails,true,"");
+            return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
         }
         catch(UnauthorizedException ex)
         {
-            SignupResponse signupResponse = new SignupResponse(null,false,"Cannot get admin role illegally");
-            return new ResponseEntity<SignupResponse>(signupResponse,HttpStatus.FORBIDDEN);
+            AuthResponse authResponse = new AuthResponse(null,false,"Cannot get admin role illegally");
+            return new ResponseEntity<AuthResponse>(authResponse,HttpStatus.FORBIDDEN);
         }
         catch(NoSuchElementException ex)
         {
-            SignupResponse signupResponse = new SignupResponse(null, false, "Could not find the required role in database");
-            return new ResponseEntity<SignupResponse>(signupResponse,HttpStatus.BAD_REQUEST);
+            AuthResponse authResponse = new AuthResponse(null, false, "Could not find the required role in database");
+            return new ResponseEntity<AuthResponse>(authResponse,HttpStatus.BAD_REQUEST);
         }
 
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthenticatedUserDetails> login(@RequestParam String email, @RequestParam String password, HttpServletRequest request, HttpServletResponse response){
+    public ResponseEntity<AuthResponse> login(@RequestParam String email, @RequestParam String password, HttpServletRequest request, HttpServletResponse response){
         try{
             return authenticate(email, password, request, response);
         }
-        catch (Exception ex)
+        catch (NoSuchElementException ex)
         {
-            System.out.println(ex.toString());
-            return new ResponseEntity<AuthenticatedUserDetails>((AuthenticatedUserDetails) null,HttpStatus.FORBIDDEN);
+            AuthResponse authResponse = new AuthResponse(null , false,"Email doesn't exists");
+            return new ResponseEntity<AuthResponse>(authResponse,HttpStatus.FORBIDDEN);
+        }
+        catch (AuthenticationException ex)
+        {
+            AuthResponse authResponse = new AuthResponse(null,false,"Password doesn't match");
+            return new ResponseEntity<AuthResponse>(authResponse,HttpStatus.FORBIDDEN);
         }
     }
 
     @NotNull
-    private ResponseEntity<AuthenticatedUserDetails> authenticate(String email, String password, HttpServletRequest request, HttpServletResponse response) {
+    private ResponseEntity<AuthResponse> authenticate(String email, String password, HttpServletRequest request, HttpServletResponse response) {
         User fetchedUser = userService.getUserByEmail(email).orElseThrow();
         AuthenticatedUserDetails userDetails = new AuthenticatedUserDetails(
                 fetchedUser.getId(),
@@ -136,7 +141,8 @@ public class AuthController {
         HttpSession session = request.getSession(true);
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
         response.setHeader("Set-Cookie", "JSESSIONID=" + session.getId() + "; Path=/; HttpOnly; Secure; SameSite=None");
-        return new ResponseEntity<AuthenticatedUserDetails>(userDetails, HttpStatus.OK);
+        AuthResponse authResponse = new AuthResponse(userDetails,true, "");
+        return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.OK);
     }
 
     @GetMapping("/isAuthenticated")

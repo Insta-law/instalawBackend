@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class SignupResponse {
+public class AuthResponse {
     public AuthenticatedUserDetails userDetails;
     public boolean isSuccess;
     public String errorResponse;
